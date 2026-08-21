@@ -53,6 +53,7 @@ data class UserProfile(
     val values: List<String> = emptyList(),
     val preferences: Preferences = Preferences(),
     val deal_breakers: List<String> = emptyList(),
+    val last_active_at: Long = System.currentTimeMillis() / 1000,
     val created_at: Long = System.currentTimeMillis() / 1000
 )
 
@@ -79,12 +80,14 @@ data class CandidateProfile(
     val ai_reasons: List<String> = emptyList(),
     val is_intro_sent: Boolean = false,
     val is_blocked: Boolean = false,
+    val last_active_at: Long = System.currentTimeMillis() / 1000,
     val updated_at: Long = System.currentTimeMillis() / 1000
 ) {
     val aiScore: Double? get() = ai_score
     val aiRank: Int? get() = ai_rank
     val aiReasons: List<String> get() = ai_reasons
     val initialScore: Double get() = initial_score
+    val lastActiveAt: Long get() = last_active_at
 }
 
 @Serializable

@@ -9,6 +9,9 @@ import com.nostrange.app.data.repository.ChatRepository
 import com.nostrange.app.data.repository.ProfileRepository
 import com.nostrange.app.data.repository.RelayRepository
 import com.nostrange.app.security.KeyStoreManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class NostrangeApp : Application() {
 
@@ -40,5 +43,10 @@ class NostrangeApp : Application() {
         super.onCreate()
         // Ensure hardware-backed Nostr keypair exists
         keyStoreManager.getOrCreateKeypair()
+
+        // Broadcast updated online timestamp to Nostr relays
+        CoroutineScope(Dispatchers.IO).launch {
+            profileRepository.broadcastOnlineStatus()
+        }
     }
 }

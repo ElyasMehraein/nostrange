@@ -2,7 +2,6 @@ package com.nostrange.app.ui.chats
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,11 +21,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Block
-import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -57,7 +57,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nostrange.app.domain.model.ChatMessage
 import com.nostrange.app.domain.model.Conversation
-import com.nostrange.app.security.Bech32
 import com.nostrange.app.ui.components.CompatibilityBadge
 import com.nostrange.app.ui.components.NoMediaNotice
 import com.nostrange.app.ui.components.PrivacyDisclaimerBanner
@@ -86,23 +85,24 @@ fun ChatsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .imePadding()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
-        // Header
+        // RTL Persian Header
         Text(
-            text = "گفتگوهای خصوصی (Chats)",
+            text = "گفتگوهای خصوصی",
             style = MaterialTheme.typography.titleLarge,
             color = TextPrimary
         )
         Text(
-            text = "پیام‌رسانی سرتاسر رمزنگاری شده NIP-44 روی Nostr",
+            text = "پیام‌رسانی سرتاسر رمزنگاری شده روی Nostr",
             style = MaterialTheme.typography.labelSmall,
             color = TextSecondary
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         NoMediaNotice()
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         if (conversations.isEmpty()) {
             Box(
@@ -113,12 +113,12 @@ fun ChatsScreen(
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(
-                        imageVector = Icons.Default.Chat,
+                        imageVector = Icons.AutoMirrored.Filled.Chat,
                         contentDescription = null,
                         tint = TextMuted,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(44.dp)
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = "هنوز گفتگویی شروع نشده است.",
                         style = MaterialTheme.typography.bodyMedium,
@@ -126,7 +126,7 @@ fun ChatsScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "در تب 'Matches' می‌توانید برای افراد سازگار 'درخواست آشنایی' بفرستید.",
+                        text = "در تب «همسان‌ها» می‌توانید برای افراد سازگار «درخواست آشنایی» بفرستید.",
                         style = MaterialTheme.typography.labelSmall,
                         color = TextMuted
                     )
@@ -182,7 +182,7 @@ private fun ConversationItem(
                         text = truncatedPubkey,
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontFamily = FontFamily.Monospace,
-                            fontSize = 14.sp
+                            fontSize = 13.sp
                         ),
                         color = TextPrimary
                     )
@@ -240,6 +240,7 @@ fun ChatDetailScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
+            .imePadding()
     ) {
         // Top App Bar
         TopAppBar(
@@ -250,7 +251,7 @@ fun ChatDetailScreen(
                             text = truncatedPubkey,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontFamily = FontFamily.Monospace,
-                                fontSize = 14.sp
+                                fontSize = 13.sp
                             ),
                             color = TextPrimary
                         )
@@ -264,7 +265,7 @@ fun ChatDetailScreen(
             },
             navigationIcon = {
                 IconButton(onClick = onBack) {
-                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "بازگشت", tint = TextPrimary)
+                    Icon(imageVector = Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "بازگشت", tint = TextPrimary)
                 }
             },
             actions = {
@@ -282,7 +283,7 @@ fun ChatDetailScreen(
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Icon(imageVector = Icons.Default.Block, contentDescription = null, tint = AccentPink, modifier = Modifier.size(18.dp))
                                     Spacer(modifier = Modifier.width(8.dp))
-                                    Text("بلاک کردن این کاربر (Spam Block)", color = AccentPink)
+                                    Text("بلاک کردن این کاربر", color = AccentPink)
                                 }
                             },
                             onClick = {
@@ -318,13 +319,13 @@ fun ChatDetailScreen(
             }
         }
 
-        // Input Bar (or blocked state notice)
+        // Input Bar (Always raised smoothly above keyboard)
         if (isBlocked) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(DarkSurfaceVariant)
-                    .padding(16.dp),
+                    .padding(14.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
@@ -372,7 +373,7 @@ fun ChatDetailScreen(
                         .background(if (inputMessage.isNotBlank()) PrimaryPurple else DarkSurfaceVariant)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Send,
+                        imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "ارسال",
                         tint = if (inputMessage.isNotBlank()) TextPrimary else TextMuted
                     )
@@ -412,7 +413,7 @@ private fun ChatMessageBubble(message: ChatMessage) {
                     text = message.content,
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextPrimary,
-                    lineHeight = 19.sp
+                    lineHeight = 21.sp
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(

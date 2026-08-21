@@ -14,6 +14,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,12 +25,11 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Download
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -78,7 +79,6 @@ fun MeScreen(
     val userProfile by viewModel.userProfileFlow.collectAsState(initial = null)
     val chatMessages by viewModel.chatMessages.collectAsState()
     val currentIndex by viewModel.currentQuestionIndex.collectAsState()
-    val answers by viewModel.answers.collectAsState()
     val generatedPrompt by viewModel.generatedPrompt.collectAsState()
     val isImporting by viewModel.isImporting.collectAsState()
     val importError by viewModel.importError.collectAsState()
@@ -98,9 +98,10 @@ fun MeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .imePadding()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
-        // Header
+        // RTL Persian Header
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -108,7 +109,7 @@ fun MeScreen(
         ) {
             Column {
                 Text(
-                    text = "پروفایل من (Me)",
+                    text = "پروفایل من",
                     style = MaterialTheme.typography.titleLarge,
                     color = TextPrimary
                 )
@@ -119,29 +120,27 @@ fun MeScreen(
                 )
             }
 
-            Row {
-                IconButton(onClick = { viewModel.restartInterview() }) {
-                    Icon(
-                        imageVector = Icons.Default.Refresh,
-                        contentDescription = "شروع مجدد",
-                        tint = TextSecondary
-                    )
-                }
+            IconButton(onClick = { viewModel.restartInterview() }) {
+                Icon(
+                    imageVector = Icons.Default.Refresh,
+                    contentDescription = "شروع مجدد",
+                    tint = TextSecondary
+                )
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         NoMediaNotice()
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
-        // If user profile is already saved and published
+        // If user profile is already saved
         if (userProfile != null) {
             ProfileSummaryCard(
                 profile = userProfile!!,
                 onReEdit = { viewModel.restartInterview() },
                 onNavigateToMatches = onNavigateToMatches
             )
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
         }
 
         // Conversational Chat list
@@ -159,11 +158,13 @@ fun MeScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Input & Actions
+        // Input & Actions (Always above keyboard due to imePadding)
         if (currentIndex < viewModel.questions.size) {
             val currentQ = viewModel.questions[currentIndex]
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 OutlinedTextField(
@@ -197,7 +198,7 @@ fun MeScreen(
                         .background(if (inputAnswerText.isNotBlank()) PrimaryPurple else DarkSurfaceVariant)
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Send,
+                        imageVector = Icons.AutoMirrored.Filled.Send,
                         contentDescription = "ارسال",
                         tint = if (inputAnswerText.isNotBlank()) TextPrimary else TextMuted
                     )
@@ -206,7 +207,9 @@ fun MeScreen(
         } else {
             // All questions answered -> Show AI Prompt / Import buttons
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 Button(
@@ -214,9 +217,9 @@ fun MeScreen(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple)
                 ) {
-                    Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null)
+                    Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("تولید پرامپت AI")
+                    Text("تولید پرامپت هوش مصنوعی", fontSize = 12.sp)
                 }
 
                 Button(
@@ -224,9 +227,9 @@ fun MeScreen(
                     modifier = Modifier.weight(1f),
                     colors = ButtonDefaults.buttonColors(containerColor = SecondaryCyan)
                 ) {
-                    Icon(imageVector = Icons.Default.Download, contentDescription = null, tint = DarkBackground)
+                    Icon(imageVector = Icons.Default.Download, contentDescription = null, tint = DarkBackground, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("وارد کردن JSON", color = DarkBackground)
+                    Text("وارد کردن خروجی JSON", color = DarkBackground, fontSize = 12.sp)
                 }
             }
         }
@@ -239,7 +242,7 @@ fun MeScreen(
             onDismiss = { viewModel.clearGeneratedPrompt() },
             onCopy = {
                 viewModel.copyPromptToClipboard(context, generatedPrompt!!)
-                Toast.makeText(context, "پرامپت در Clipboard کپی شد!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(context, "پرامپت در حافظه کپی شد!", Toast.LENGTH_SHORT).show()
             },
             onShare = {
                 viewModel.sharePrompt(context, generatedPrompt!!)
@@ -255,7 +258,7 @@ fun MeScreen(
             onConfirmImport = { rawJson ->
                 viewModel.importProfileJson(rawJson) {
                     showImportDialog = false
-                    Toast.makeText(context, "پروفایل با موفقیت ذخیره و در Nostr منتشر شد!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "پروفایل با موفقیت در Nostr ثبت و منتشر شد!", Toast.LENGTH_LONG).show()
                 }
             }
         )
@@ -296,7 +299,7 @@ private fun ChatBubble(item: ChatMessageItem) {
                 text = item.text,
                 style = MaterialTheme.typography.bodyMedium,
                 color = TextPrimary,
-                lineHeight = 20.sp
+                lineHeight = 22.sp
             )
         }
     }
@@ -330,7 +333,7 @@ private fun ProfileSummaryCard(
                     )
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = "پروفایل فعال Nostrange",
+                        text = "پروفایل فعال و منتشر شده",
                         style = MaterialTheme.typography.titleMedium,
                         color = TextPrimary
                     )
@@ -379,7 +382,7 @@ private fun ProfileSummaryCard(
                     onClick = onNavigateToMatches,
                     colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple)
                 ) {
-                    Text("مشاهده Matchها", fontSize = 12.sp)
+                    Text("مشاهده همسان‌ها", fontSize = 12.sp)
                 }
             }
         }

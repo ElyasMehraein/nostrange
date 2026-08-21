@@ -2,8 +2,6 @@ package com.nostrange.app.ui.settings
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,11 +10,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,7 +23,6 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Key
 import androidx.compose.material.icons.filled.Lan
-import androidx.compose.material.icons.filled.NoPhotography
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Storage
@@ -53,7 +50,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -87,29 +83,30 @@ fun SettingsScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .imePadding()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
-        // Header
+        // RTL Persian Header
         Text(
             text = "تنظیمات و حریم خصوصی",
             style = MaterialTheme.typography.titleLarge,
             color = TextPrimary
         )
         Text(
-            text = "مدیریت رله‌های Nostr، هویت رمزنگاری شده و دیتابیس محلی",
+            text = "مدیریت رله‌های غیرمتمرکز، هویت امن و پایگاه داده محلی",
             style = MaterialTheme.typography.labelSmall,
             color = TextSecondary
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         NoMediaNotice()
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(14.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             // Nostr Identity Card
             item {
@@ -123,18 +120,18 @@ fun SettingsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.Key, contentDescription = null, tint = PrimaryPurple)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "هویت Nostr من", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                            Text(text = "هویت غیرمتمرکز من", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "کلید خصوصی شما فقط در سخت‌افزار دستگاه ذخیره شده و هرگز به سرور، AI، رله یا Analytics ارسال نمی‌شود.",
+                            text = "کلید خصوصی شما فقط در سخت‌افزار دستگاه ذخیره شده و هرگز به سرور، هوش مصنوعی، رله یا هیچ سیستمی ارسال نمی‌شود.",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text(text = "Public Key (npub):", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                        Text(text = "شناسه عمومی کلید:", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -146,12 +143,12 @@ fun SettingsScreen(
                         ) {
                             Text(
                                 text = "${viewModel.userPubkeyNpub.take(16)}...${viewModel.userPubkeyNpub.takeLast(10)}",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace),
+                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace, fontSize = 12.sp),
                                 color = TextPrimary
                             )
                             IconButton(onClick = {
-                                viewModel.copyToClipboard(context, "Nostr npub", viewModel.userPubkeyNpub)
-                                Toast.makeText(context, "کلید عمومی (npub) کپی شد", Toast.LENGTH_SHORT).show()
+                                viewModel.copyToClipboard(context, "کلید عمومی", viewModel.userPubkeyNpub)
+                                Toast.makeText(context, "کلید عمومی کپی شد", Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(imageVector = Icons.Default.ContentCopy, contentDescription = "کپی", tint = SecondaryCyan, modifier = Modifier.size(18.dp))
                             }
@@ -177,7 +174,7 @@ fun SettingsScreen(
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Icon(imageVector = Icons.Default.Lan, contentDescription = null, tint = SecondaryCyan)
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(text = "رله‌های غیرمتمرکز Nostr", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                                Text(text = "رله‌های شبکه", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
                             }
                             IconButton(onClick = { showAddRelayDialog = true }) {
                                 Icon(imageVector = Icons.Default.Add, contentDescription = "افزودن رله", tint = SecondaryCyan)
@@ -210,12 +207,12 @@ fun SettingsScreen(
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(imageVector = Icons.Default.Storage, contentDescription = null, tint = AccentAmber)
                             Spacer(modifier = Modifier.width(8.dp))
-                            Text(text = "دیتابیس محلی (Room)", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+                            Text(text = "پایگاه داده محلی", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(6.dp))
                         Text(
-                            text = "تعداد پروفایل‌های کاندیدای کش شده: $candidateCount (ظرفیت تا 10,000+)",
+                            text = "تعداد پروفایل‌های فعال (آنلاین در ۱۰ روز اخیر): $candidateCount نفر",
                             style = MaterialTheme.typography.bodyMedium,
                             color = TextSecondary
                         )
@@ -224,13 +221,13 @@ fun SettingsScreen(
                         OutlinedButton(
                             onClick = {
                                 viewModel.clearCandidateCache()
-                                Toast.makeText(context, "کش پروفایل‌های کاندیدا پاک شد.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(context, "کش پروفایل‌ها پاک شد.", Toast.LENGTH_SHORT).show()
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Icon(imageVector = Icons.Default.Delete, contentDescription = null, tint = AccentPink, modifier = Modifier.size(16.dp))
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("پاک‌سازی کش کاندیداها", color = AccentPink)
+                            Text("پاک‌سازی کش پروفایل‌ها", color = AccentPink)
                         }
                     }
                 }
@@ -252,11 +249,11 @@ fun SettingsScreen(
                         }
 
                         Spacer(modifier = Modifier.height(8.dp))
-                        Text(text = "✓ بدون سرور یا دیتابیس مرکزی متعلق به توسعه‌دهنده", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-                        Text(text = "✓ بدون هوش مصنوعی مرکزی یا ارسال لاگ و تحلیل", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(text = "✓ بدون سرور یا پایگاه داده مرکزی متعلق به توسعه‌دهنده", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(text = "✓ بدون هوش مصنوعی مرکزی یا ارسال لاگ و ردگیری", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                         Text(text = "✓ بدون قابلیت عکس، ویدئو یا هرگونه فایل رسانه‌ای", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-                        Text(text = "✓ فیلترینگ سخت‌گیرانه اطلاعات هویتی و شماره تماس", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
-                        Text(text = "✓ پردازش و امتیازدهی سازگاری روی حافظه محلی دستگاه", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(text = "✓ فیلترینگ خودکار اطلاعات هویتی، آدرس و شماره تماس", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
+                        Text(text = "✓ پردازش و امتیازدهی سازگاری روی حافظه دستگاه", style = MaterialTheme.typography.labelSmall, color = TextSecondary)
                     }
                 }
             }
@@ -343,11 +340,11 @@ fun AddRelayDialog(
         onDismissRequest = onDismiss,
         containerColor = DarkSurface,
         title = {
-            Text(text = "افزودن رله Nostr جدید", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
+            Text(text = "افزودن رله جدید", style = MaterialTheme.typography.titleMedium, color = TextPrimary)
         },
         text = {
             Column {
-                Text(text = "آدرس WebSocket رله عمومی یا خصوصی خود را وارد کنید:", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
+                Text(text = "آدرس رله عمومی یا خصوصی خود را وارد کنید:", style = MaterialTheme.typography.bodyMedium, color = TextSecondary)
                 Spacer(modifier = Modifier.height(8.dp))
                 OutlinedTextField(
                     value = relayUrl,

@@ -68,9 +68,21 @@ class ProfileRepository(
             valuesJson = json.encodeToString(profile.values),
             preferencesJson = json.encodeToString(profile.preferences),
             dealBreakersJson = json.encodeToString(profile.deal_breakers),
+            lastActiveAt = profile.last_active_at,
             createdAt = profile.created_at
         )
         profileDao.insertOrUpdateProfile(entity)
+    }
+
+    /**
+     * Broadcasts current online status / updated matchable profile to Nostr network.
+     * Triggered every time the user opens the application.
+     */
+    suspend fun broadcastOnlineStatus() = withContext(Dispatchers.IO) {
+        val existingProfile = getUserProfileOnce() ?: return@withContext
+        val updatedProfile = existingProfile.copy(last_active_at = System.currentTimeMillis() / 1000)
+        saveProfileLocally(updatedProfile)
+        publishProfileToNostr(updatedProfile)
     }
 
     /**
@@ -94,7 +106,8 @@ class ProfileRepository(
             privateKey = privateKey,
             kind = NostrEventKind.MATCHABLE_PROFILE_KIND,
             tags = tags,
-            content = cleanProfileJson
+            content = cleanProfileJson,
+            createdAt = profile.last_active_at
         )
 
         nostrClient.publishEvent(event)
@@ -118,6 +131,7 @@ class ProfileRepository(
             values = json.decodeFromString(entity.valuesJson),
             preferences = json.decodeFromString(entity.preferencesJson),
             deal_breakers = json.decodeFromString(entity.dealBreakersJson),
+            last_active_at = entity.lastActiveAt,
             created_at = entity.createdAt
         )
     }

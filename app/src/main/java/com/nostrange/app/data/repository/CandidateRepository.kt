@@ -31,22 +31,30 @@ class CandidateRepository(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
-    val allCandidates: Flow<List<CandidateProfile>> = candidateDao.getAllCandidates().map { list ->
-        list.map { mapEntityToDomain(it) }
+    // 10 Days in seconds (864,000s)
+    private fun get10DaysCutoffTimestamp(): Long {
+        return (System.currentTimeMillis() / 1000) - (10 * 24 * 60 * 60)
     }
 
-    val topAiMatches: Flow<List<CandidateProfile>> = candidateDao.getTopAiMatches().map { list ->
-        list.map { mapEntityToDomain(it) }
-    }
+    val allCandidates: Flow<List<CandidateProfile>>
+        get() = candidateDao.getActiveCandidates(get10DaysCutoffTimestamp()).map { list ->
+            list.map { mapEntityToDomain(it) }
+        }
 
-    val candidateCount: Flow<Int> = candidateDao.getCandidateCount()
+    val topAiMatches: Flow<List<CandidateProfile>>
+        get() = candidateDao.getTopAiMatches(get10DaysCutoffTimestamp()).map { list ->
+            list.map { mapEntityToDomain(it) }
+        }
+
+    val candidateCount: Flow<Int>
+        get() = candidateDao.getCandidateCount(get10DaysCutoffTimestamp())
 
     init {
         // Listen to incoming Nostr matchable profile events from relays
         scope.launch {
             nostrClient.incomingEvents.collect { event ->
                 if (event.kind == NostrEventKind.MATCHABLE_PROFILE_KIND) {
-                    processIncomingProfileEvent(event.pubkey, event.content)
+                    processIncomingProfileEvent(event.pubkey, event.content, event.createdAt)
                 }
             }
         }
@@ -56,6 +64,7 @@ class CandidateRepository(
         val filter = NostrFilter(
             kinds = listOf(NostrEventKind.MATCHABLE_PROFILE_KIND),
             dTags = listOf("nostrange-match-profile"),
+            since = get10DaysCutoffTimestamp(),
             limit = 1000
         )
         nostrClient.subscribe("nostrange-candidates-sub", listOf(filter))
@@ -63,11 +72,12 @@ class CandidateRepository(
 
     /**
      * Executes the local candidate generation pipeline:
-     * 10,000 DB profiles -> Hard Filters -> Compatibility Scoring -> Top 500
+     * Room DB profiles (active within 10 days) -> Hard Filters -> Compatibility Scoring -> Top 500
      */
     suspend fun runLocalCandidateGeneration(user: UserProfile, targetLimit: Int = 500): List<CandidateProfile> =
         withContext(Dispatchers.IO) {
-            val allLocal = candidateDao.getTopCandidatesForAiPrompt(10000).map { mapEntityToDomain(it) }
+            val cutoff = get10DaysCutoffTimestamp()
+            val allLocal = candidateDao.getTopCandidatesForAiPrompt(cutoff, 10000).map { mapEntityToDomain(it) }
             val topCandidates = CandidateRanker.generateTopCandidates(user, allLocal, targetLimit)
 
             // Persist initial scores back to DB
@@ -84,7 +94,8 @@ class CandidateRepository(
      * Imports and validates Top-50 AI Matching Result.
      */
     suspend fun importAiMatchingResult(rawJson: String): Result<Int> = withContext(Dispatchers.IO) {
-        val topCandidates = candidateDao.getTopCandidatesForAiPrompt(500)
+        val cutoff = get10DaysCutoffTimestamp()
+        val topCandidates = candidateDao.getTopCandidatesForAiPrompt(cutoff, 500)
         val validPubkeys = topCandidates.map { it.pubkey }.toSet()
 
         val parseResult = MatchingResultSchema.parseAndValidateMatchingResult(rawJson, validPubkeys)
@@ -126,16 +137,12 @@ class CandidateRepository(
         candidateDao.clearAllCandidates()
     }
 
-    suspend fun insertSampleCandidates(candidates: List<CandidateProfile>) = withContext(Dispatchers.IO) {
-        val entities = candidates.map { mapDomainToEntity(it) }
-        candidateDao.insertCandidates(entities)
-    }
-
-    private suspend fun processIncomingProfileEvent(pubkey: String, contentJson: String) {
+    private suspend fun processIncomingProfileEvent(pubkey: String, contentJson: String, eventCreatedAt: Long) {
         if (blockedPubkeyDao.isBlocked(pubkey)) return
 
         val parseResult = ProfileJsonSchema.parseAndValidateProfileJson(contentJson, pubkey)
         parseResult.onSuccess { profile ->
+            val lastActive = if (profile.last_active_at > 0) profile.last_active_at else eventCreatedAt
             val entity = CandidateEntity(
                 pubkey = profile.pubkey,
                 schemaVersion = profile.schema_version,
@@ -158,6 +165,7 @@ class CandidateRepository(
                 aiReasonsJson = "[]",
                 isIntroSent = false,
                 isBlocked = false,
+                lastActiveAt = lastActive,
                 updatedAt = System.currentTimeMillis() / 1000
             )
             candidateDao.insertCandidate(entity)
@@ -187,34 +195,8 @@ class CandidateRepository(
             ai_reasons = json.decodeFromString(entity.aiReasonsJson),
             is_intro_sent = entity.isIntroSent,
             is_blocked = entity.isBlocked,
+            last_active_at = entity.lastActiveAt,
             updated_at = entity.updatedAt
-        )
-    }
-
-    private fun mapDomainToEntity(profile: CandidateProfile): CandidateEntity {
-        return CandidateEntity(
-            pubkey = profile.pubkey,
-            schemaVersion = profile.schema_version,
-            country = profile.country,
-            region = profile.region,
-            age = profile.age,
-            gender = profile.gender,
-            targetGendersJson = json.encodeToString(profile.target_genders),
-            relationshipGoal = profile.relationship_goal,
-            wantsMarriage = profile.wants_marriage,
-            wantsChildren = profile.wants_children,
-            personalityJson = json.encodeToString(profile.personality),
-            lifestyleJson = json.encodeToString(profile.lifestyle),
-            interestsJson = json.encodeToString(profile.interests),
-            valuesJson = json.encodeToString(profile.values),
-            dealBreakersJson = json.encodeToString(profile.deal_breakers),
-            initialScore = profile.initial_score,
-            aiRank = profile.ai_rank,
-            aiScore = profile.ai_score,
-            aiReasonsJson = json.encodeToString(profile.ai_reasons),
-            isIntroSent = profile.is_intro_sent,
-            isBlocked = profile.is_blocked,
-            updatedAt = profile.updated_at
         )
     }
 }

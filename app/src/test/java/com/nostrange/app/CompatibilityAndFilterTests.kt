@@ -30,7 +30,8 @@ class CompatibilityAndFilterTests {
         values = listOf("honesty", "family", "growth"),
         interests = listOf("books", "tech"),
         preferences = Preferences(min_age = 22, max_age = 35, allow_different_country = false),
-        deal_breakers = listOf("smoking")
+        deal_breakers = listOf("smoking"),
+        last_active_at = System.currentTimeMillis() / 1000
     )
 
     @Test
@@ -46,10 +47,31 @@ class CompatibilityAndFilterTests {
             wants_marriage = true,
             wants_children = true,
             values = listOf("family", "growth"),
-            interests = listOf("books")
+            interests = listOf("books"),
+            last_active_at = System.currentTimeMillis() / 1000
         )
 
         assertTrue(HardFilterEngine.isEligible(userProfile, compatibleCandidate))
+    }
+
+    @Test
+    fun testHardFilterIgnoreUsersInactiveMoreThan10Days() {
+        val oldInactiveCandidate = CandidateProfile(
+            pubkey = "candidate_pubkey_inactive",
+            country = "IR",
+            region = "Tehran",
+            age = 28,
+            gender = "female",
+            target_genders = listOf("male"),
+            relationship_goal = "marriage",
+            wants_marriage = true,
+            wants_children = true,
+            values = listOf("family", "growth"),
+            interests = listOf("books"),
+            last_active_at = (System.currentTimeMillis() / 1000) - (15 * 24 * 60 * 60) // 15 days ago
+        )
+
+        assertFalse("Candidates inactive for more than 10 days must be filtered out", HardFilterEngine.isEligible(userProfile, oldInactiveCandidate))
     }
 
     @Test
@@ -59,11 +81,12 @@ class CompatibilityAndFilterTests {
             country = "IR",
             region = "Tehran",
             age = 29,
-            gender = "male", // Incompatible with user's target_genders ("female")
+            gender = "male",
             target_genders = listOf("female"),
             relationship_goal = "marriage",
             wants_marriage = true,
-            wants_children = true
+            wants_children = true,
+            last_active_at = System.currentTimeMillis() / 1000
         )
 
         assertFalse(HardFilterEngine.isEligible(userProfile, maleCandidate))
@@ -75,12 +98,13 @@ class CompatibilityAndFilterTests {
             pubkey = "candidate_pubkey_4444",
             country = "IR",
             region = "Tehran",
-            age = 45, // Out of range (22-35)
+            age = 45,
             gender = "female",
             target_genders = listOf("male"),
             relationship_goal = "marriage",
             wants_marriage = true,
-            wants_children = true
+            wants_children = true,
+            last_active_at = System.currentTimeMillis() / 1000
         )
 
         assertFalse(HardFilterEngine.isEligible(userProfile, candidateTooOld))
@@ -98,7 +122,8 @@ class CompatibilityAndFilterTests {
             relationship_goal = "marriage",
             wants_marriage = true,
             wants_children = true,
-            interests = listOf("smoking") // Triggers user deal-breaker!
+            interests = listOf("smoking"),
+            last_active_at = System.currentTimeMillis() / 1000
         )
 
         assertFalse(HardFilterEngine.isEligible(userProfile, smokerCandidate))
@@ -119,7 +144,8 @@ class CompatibilityAndFilterTests {
             personality = Personality(independence = 75, sociability = 55, openness = 75),
             lifestyle = Lifestyle(activity_level = 65, travel = 55),
             values = listOf("honesty", "family", "growth"),
-            interests = listOf("books", "tech")
+            interests = listOf("books", "tech"),
+            last_active_at = System.currentTimeMillis() / 1000
         )
 
         val score = CompatibilityEngine.calculateMutualScore(userProfile, candidate)
@@ -132,16 +158,19 @@ class CompatibilityAndFilterTests {
             CandidateProfile(
                 pubkey = "cand_1", country = "IR", region = "Tehran", age = 28, gender = "female",
                 target_genders = listOf("male"), relationship_goal = "marriage", wants_marriage = true, wants_children = true,
-                values = listOf("honesty", "family"), interests = listOf("books")
+                values = listOf("honesty", "family"), interests = listOf("books"),
+                last_active_at = System.currentTimeMillis() / 1000
             ),
             CandidateProfile(
                 pubkey = "cand_2_ineligible", country = "US", region = "CA", age = 28, gender = "female",
-                target_genders = listOf("male"), relationship_goal = "marriage", wants_marriage = true, wants_children = true
+                target_genders = listOf("male"), relationship_goal = "marriage", wants_marriage = true, wants_children = true,
+                last_active_at = System.currentTimeMillis() / 1000
             ),
             CandidateProfile(
                 pubkey = "cand_3_smoker", country = "IR", region = "Tehran", age = 28, gender = "female",
                 target_genders = listOf("male"), relationship_goal = "marriage", wants_marriage = true, wants_children = true,
-                interests = listOf("smoking")
+                interests = listOf("smoking"),
+                last_active_at = System.currentTimeMillis() / 1000
             )
         )
 

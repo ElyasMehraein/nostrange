@@ -2,7 +2,6 @@ package com.nostrange.app.ui.matches
 
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -20,13 +20,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AutoAwesome
-import androidx.compose.material.icons.filled.Chat
-import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -34,7 +32,6 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -86,7 +83,8 @@ fun MatchesScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(DarkBackground)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .imePadding()
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     ) {
         // Header
         Row(
@@ -96,21 +94,21 @@ fun MatchesScreen(
         ) {
             Column {
                 Text(
-                    text = "همسان‌های سازگار (Matches)",
+                    text = "همسان‌های سازگار",
                     style = MaterialTheme.typography.titleLarge,
                     color = TextPrimary
                 )
                 Text(
-                    text = "رتبه‌بندی دو مرحله‌ای محلی + هوش مصنوعی شخصی",
+                    text = "رتبه‌بندی محلی بر اساس کاندیداهای آنلاین در ۱۰ روز اخیر",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextSecondary
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(6.dp))
         NoMediaNotice()
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Pipeline Stats
         Row(
@@ -118,14 +116,14 @@ fun MatchesScreen(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             StatCard(
-                title = "بانک کاندیداها",
-                value = "$candidateCount",
+                title = "کاندیداهای آنلاین اخیر",
+                value = "$candidateCount نفر",
                 icon = Icons.Default.Favorite,
                 modifier = Modifier.weight(1f),
                 tint = PrimaryPurple
             )
             StatCard(
-                title = "رتبه‌بندی AI",
+                title = "رتبه‌بندی هوش مصنوعی",
                 value = "${topMatches.size} مورد",
                 icon = Icons.Default.AutoAwesome,
                 modifier = Modifier.weight(1f),
@@ -133,7 +131,7 @@ fun MatchesScreen(
             )
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Action Buttons: Generate AI prompt & Import AI JSON
         Row(
@@ -151,7 +149,7 @@ fun MatchesScreen(
                 } else {
                     Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text("پرامپت ۵۰۰ کاندیدا", fontSize = 12.sp)
+                    Text("پرامپت ۵۰۰ کاندیدا", fontSize = 11.sp)
                 }
             }
 
@@ -162,11 +160,11 @@ fun MatchesScreen(
             ) {
                 Icon(imageVector = Icons.Default.Download, contentDescription = null, tint = DarkBackground, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("وارد کردن ۵۰ رتبه برتر", color = DarkBackground, fontSize = 12.sp)
+                Text("ثبت ۵۰ رتبه برتر", color = DarkBackground, fontSize = 11.sp)
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Matches List
         if (topMatches.isEmpty()) {
@@ -181,17 +179,17 @@ fun MatchesScreen(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
                         tint = TextMuted,
-                        modifier = Modifier.size(48.dp)
+                        modifier = Modifier.size(44.dp)
                     )
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(modifier = Modifier.height(10.dp))
                     Text(
-                        text = "هنوز نتیجه رتبه‌بندی هوش مصنوعی وارد نشده است.",
+                        text = "هنوز نتیجه رتبه‌بندی هوش مصنوعی ثبت نشده است.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = TextSecondary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "دکمه 'پرامپت ۵۰۰ کاندیدا' را بزنید و نتیجه را در 'وارد کردن ۵۰ رتبه برتر' ثبت کنید.",
+                        text = "دکمه «پرامپت ۵۰۰ کاندیدا» را بزنید و نتیجه را در «ثبت ۵۰ رتبه برتر» وارد کنید.",
                         style = MaterialTheme.typography.labelSmall,
                         color = TextMuted
                     )
@@ -243,7 +241,7 @@ fun MatchesScreen(
             onConfirmImport = { rawJson ->
                 viewModel.importMatchingResult(rawJson) {
                     showImportDialog = false
-                    Toast.makeText(context, "رتبه‌بندی هوش مصنوعی با موفقیت اعمال شد!", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "رتبه‌بندی هوش مصنوعی با موفقیت ثبت شد!", Toast.LENGTH_LONG).show()
                 }
             }
         )
@@ -285,7 +283,6 @@ private fun MatchCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Rank Badge
                     candidate.ai_rank?.let { rank ->
                         Box(
                             modifier = Modifier
@@ -311,7 +308,7 @@ private fun MatchCard(
                             color = TextPrimary
                         )
                         Text(
-                            text = "${candidate.age} سال • ${candidate.gender} • هدف: ${candidate.relationship_goal}",
+                            text = "${candidate.age} سال • ${if (candidate.gender == "female") "خانم" else "آقا"} • هدف: ${candidate.relationship_goal}",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary
                         )
@@ -321,9 +318,8 @@ private fun MatchCard(
                 CompatibilityBadge(score = candidate.ai_score ?: candidate.initial_score)
             }
 
-            // Key AI Reasons
             if (candidate.ai_reasons.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -336,15 +332,14 @@ private fun MatchCard(
                             text = "✓ $reason",
                             style = MaterialTheme.typography.labelSmall,
                             color = TextSecondary,
-                            lineHeight = 16.sp
+                            lineHeight = 17.sp
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Action Button
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End,
@@ -355,18 +350,18 @@ private fun MatchCard(
                         onClick = onOpenChat,
                         colors = ButtonDefaults.buttonColors(containerColor = AccentGreen)
                     ) {
-                        Icon(imageVector = Icons.Default.Chat, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(imageVector = Icons.AutoMirrored.Filled.Chat, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("ادامه چت", fontSize = 12.sp)
+                        Text("ادامه گفتگو", fontSize = 11.sp)
                     }
                 } else {
                     Button(
                         onClick = onRequestIntro,
                         colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple)
                     ) {
-                        Icon(imageVector = Icons.Default.Send, contentDescription = null, modifier = Modifier.size(16.dp))
+                        Icon(imageVector = Icons.AutoMirrored.Filled.Send, contentDescription = null, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(6.dp))
-                        Text("درخواست آشنایی", fontSize = 12.sp)
+                        Text("درخواست آشنایی", fontSize = 11.sp)
                     }
                 }
             }

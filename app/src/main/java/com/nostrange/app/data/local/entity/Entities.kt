@@ -22,6 +22,7 @@ data class UserProfileEntity(
     val valuesJson: String,
     val preferencesJson: String,
     val dealBreakersJson: String,
+    val lastActiveAt: Long,
     val createdAt: Long
 )
 
@@ -35,7 +36,8 @@ data class UserProfileEntity(
         Index(value = ["gender"]),
         Index(value = ["relationshipGoal"]),
         Index(value = ["initialScore"]),
-        Index(value = ["aiRank"])
+        Index(value = ["aiRank"]),
+        Index(value = ["lastActiveAt"])
     ]
 )
 data class CandidateEntity(
@@ -60,6 +62,7 @@ data class CandidateEntity(
     val aiReasonsJson: String,
     val isIntroSent: Boolean = false,
     val isBlocked: Boolean = false,
+    val lastActiveAt: Long,
     val updatedAt: Long
 )
 

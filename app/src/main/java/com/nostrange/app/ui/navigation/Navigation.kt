@@ -2,10 +2,11 @@ package com.nostrange.app.ui.navigation
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
@@ -41,11 +42,11 @@ import com.nostrange.app.ui.theme.TextMuted
 import com.nostrange.app.ui.theme.TextPrimary
 
 sealed class Screen(val route: String, val title: String, val icon: ImageVector? = null) {
-    object Me : Screen("me", "Me", Icons.Default.Person)
-    object Matches : Screen("matches", "Matches", Icons.Default.Favorite)
-    object Chats : Screen("chats", "Chats", Icons.Default.Chat)
-    object Settings : Screen("settings", "Settings", Icons.Default.Settings)
-    object ChatDetail : Screen("chat_detail/{pubkey}", "Chat") {
+    object Me : Screen("me", "من", Icons.Default.Person)
+    object Matches : Screen("matches", "همسان‌ها", Icons.Default.Favorite)
+    object Chats : Screen("chats", "گفتگوها", Icons.AutoMirrored.Filled.Chat)
+    object Settings : Screen("settings", "تنظیمات", Icons.Default.Settings)
+    object ChatDetail : Screen("chat_detail/{pubkey}", "گفتگو") {
         fun createRoute(pubkey: String) = "chat_detail/$pubkey"
     }
 }
@@ -67,7 +68,9 @@ fun MainAppNavigation(
     val isBottomBarVisible = bottomNavItems.any { it.route == currentRoute }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize().background(DarkBackground),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(DarkBackground),
         bottomBar = {
             if (isBottomBarVisible) {
                 NavigationBar(
@@ -113,11 +116,21 @@ fun MainAppNavigation(
         NavHost(
             navController = navController,
             startDestination = Screen.Me.route,
-            modifier = Modifier.padding(paddingValues)
+            modifier = Modifier
+                .padding(paddingValues)
+                .imePadding()
         ) {
             composable(Screen.Me.route) {
                 MeScreen(
-                    onNavigateToMatches = { navController.navigate(Screen.Matches.route) }
+                    onNavigateToMatches = {
+                        navController.navigate(Screen.Matches.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 )
             }
             composable(Screen.Matches.route) {

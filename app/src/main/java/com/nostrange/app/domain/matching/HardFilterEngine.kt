@@ -11,9 +11,17 @@ import kotlin.math.abs
  */
 object HardFilterEngine {
 
+    private const val TEN_DAYS_SECONDS = 10 * 24 * 60 * 60
+
     fun isEligible(user: UserProfile, candidate: CandidateProfile): Boolean {
         // Do not match user with oneself
         if (user.pubkey.equals(candidate.pubkey, ignoreCase = true)) {
+            return false
+        }
+
+        // 0. Active Status Check: Ignore users inactive for more than 10 days
+        val now = System.currentTimeMillis() / 1000
+        if (candidate.last_active_at > 0 && (now - candidate.last_active_at) > TEN_DAYS_SECONDS) {
             return false
         }
 

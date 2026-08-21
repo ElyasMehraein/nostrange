@@ -31,9 +31,11 @@ object ProfileJsonSchema {
 
             val schemaVersion = rootObj["schema_version"]?.jsonPrimitive?.intOrNull ?: 1
             val country = rootObj["country"]?.jsonPrimitive?.content?.trim()
-                ?: throw IllegalArgumentException("Missing required field: country")
+                ?: "IR"
             val region = rootObj["region"]?.jsonPrimitive?.content?.trim()
-                ?: throw IllegalArgumentException("Missing required field: region")
+                ?: rootObj["city"]?.jsonPrimitive?.content?.trim()
+                ?: rootObj["state"]?.jsonPrimitive?.content?.trim()
+                ?: "نامشخص"
             val age = rootObj["age"]?.jsonPrimitive?.intOrNull
                 ?: throw IllegalArgumentException("Missing required field: age")
 
