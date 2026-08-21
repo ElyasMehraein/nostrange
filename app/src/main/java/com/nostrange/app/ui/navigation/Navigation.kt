@@ -1,6 +1,7 @@
 package com.nostrange.app.ui.navigation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -117,7 +118,9 @@ fun MainAppNavigation(
             navController = navController,
             startDestination = Screen.Me.route,
             modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues)
+                .consumeWindowInsets(paddingValues)
                 .imePadding()
         ) {
             composable(Screen.Me.route) {
