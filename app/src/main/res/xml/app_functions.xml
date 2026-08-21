@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 16+ AppFunctions schema for Agentic System Integration -->
+<app-functions xmlns:android="http://schemas.android.com/apk/res/android">
+    <function
+        android:name="getProfileQuestionnaire"
+        android:description="@string/func_desc_questionnaire" />
+    <function
+        android:name="importAiProfileJson"
+        android:description="@string/func_desc_import_profile" />
+    <function
+        android:name="getMatchingCandidates"
+        android:description="@string/func_desc_get_candidates" />
+    <function
+        android:name="createMatchingPrompt"
+        android:description="@string/func_desc_create_matching_prompt" />
+    <function
+        android:name="importAiMatchingResult"
+        android:description="@string/func_desc_import_matching_result" />
+</app-functions>
