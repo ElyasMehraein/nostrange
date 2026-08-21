@@ -55,6 +55,55 @@ class ProfileJsonSchemaTest {
     }
 
     @Test
+    fun testPersianDigitsAndMarkdownWrapperParsing() {
+        val mixedJson = """
+        درود! این هم خروجی JSON شما:
+        ```json
+        {
+          "schema_version": ۱,
+          "country": "IR",
+          "region": "اصفهان",
+          "age": "۲۸",
+          "gender": "مرد",
+          "target_genders": ["زن"],
+          "relationship_goal": "ازدواج",
+          "wants_marriage": true,
+          "wants_children": true,
+          "personality": {
+            "independence": "۸۵",
+            "sociability": ۵۰,
+            "openness": ۷۰,
+            "emotional_stability": ۹۰,
+            "agreeableness": ۶۰,
+            "conscientiousness": ۸۰
+          },
+          "lifestyle": {
+            "activity_level": ۴۰,
+            "travel": ۶۰,
+            "social_life": ۵۰,
+            "intellectual_curiosity": ۹۰,
+            "economic_style": ۷۰
+          },
+          "interests": ["کتاب", "هوش مصنوعی"],
+          "values": ["صداقت", "خانواده"]
+        }
+        ```
+        امیدوارم مفید باشد!
+        """.trimIndent()
+
+        val result = ProfileJsonSchema.parseAndValidateProfileJson(mixedJson, "test_pubkey_persian")
+        assertTrue("Parsing must succeed for mixed Persian/English markdown input", result.isSuccess)
+        val profile = result.getOrNull()
+        assertNotNull(profile)
+        assertEquals(28, profile?.age)
+        assertEquals("male", profile?.gender)
+        assertEquals(listOf("female"), profile?.target_genders)
+        assertEquals("marriage", profile?.relationship_goal)
+        assertEquals(85, profile?.personality?.independence)
+        assertEquals(90, profile?.personality?.emotional_stability)
+    }
+
+    @Test
     fun testInvalidAgeRejection() {
         val invalidAgeJson = """
         {
@@ -107,6 +156,33 @@ class MatchingResultValidatorTest {
         assertEquals(2, aiResult?.matches?.size)
         assertEquals(1, aiResult?.matches?.get(0)?.rank)
         assertEquals(93.5, aiResult?.matches?.get(0)?.compatibilityScore ?: 0.0, 0.01)
+    }
+
+    @Test
+    fun testMatchingResultWithMarkdownAndPersianDigits() {
+        val json = """
+        ```json
+        {
+          "schema_version": ۱,
+          "matches": [
+            {
+              "rank": "۱",
+              "pubkey": "a1b2c3d4e5f60718293a4b5c6d7e8f90a1b2c3d4e5f60718293a4b5c6d7e8f90",
+              "compatibility_score": "۹۵.۵",
+              "reasons": ["ارزش‌های مشترک"]
+            }
+          ]
+        }
+        ```
+        """.trimIndent()
+
+        val result = MatchingResultSchema.parseAndValidateMatchingResult(json, validCandidatePubkeys)
+        assertTrue(result.isSuccess)
+        val aiResult = result.getOrNull()
+        assertNotNull(aiResult)
+        assertEquals(1, aiResult?.matches?.size)
+        assertEquals(1, aiResult?.matches?.get(0)?.rank)
+        assertEquals(95.5, aiResult?.matches?.get(0)?.compatibilityScore ?: 0.0, 0.01)
     }
 
     @Test

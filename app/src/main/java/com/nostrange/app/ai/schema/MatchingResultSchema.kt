@@ -38,28 +38,29 @@ object MatchingResultSchema {
         validCandidatePubkeys: Set<String>
     ): Result<AiMatchingResult> {
         return runCatching {
-            val root = json.parseToJsonElement(rawJson).jsonObject
-            val schemaVersion = root["schema_version"]?.jsonPrimitive?.intOrNull ?: 1
+            val cleanedJson = JsonSanitizerUtils.extractJson(rawJson)
+            val root = json.parseToJsonElement(cleanedJson).jsonObject
+            val schemaVersion = JsonSanitizerUtils.parseInt(root["schema_version"]?.jsonPrimitive, 1)
 
             val matchesArray = root["matches"]?.jsonArray
-                ?: throw IllegalArgumentException("Missing 'matches' array in AI response")
+                ?: throw IllegalArgumentException("آرایه 'matches' در خروجی هوش مصنوعی یافت نشد")
 
             val parsedMatches = mutableListOf<AiMatchItem>()
             val seenPubkeys = mutableSetOf<String>()
 
             for (matchElem in matchesArray) {
                 val matchObj = matchElem.jsonObject
-                val rank = matchObj["rank"]?.jsonPrimitive?.intOrNull ?: (parsedMatches.size + 1)
+                val rank = JsonSanitizerUtils.parseInt(matchObj["rank"]?.jsonPrimitive, parsedMatches.size + 1)
                 val pubkey = matchObj["pubkey"]?.jsonPrimitive?.content?.trim()?.lowercase()
-                    ?: throw IllegalArgumentException("Missing pubkey in match item")
+                    ?: throw IllegalArgumentException("شناسه کلید کاندیدا (pubkey) در آیتم رتبه‌بندی یافت نشد")
 
                 // Ensure pubkey is a 64-character hex string
                 if (pubkey.length != 64 || !pubkey.all { it in "0123456789abcdef" }) {
                     continue // Skip invalid pubkeys
                 }
 
-                // AI is forbidden from hallucinating or inventing new pubkeys
-                if (!validCandidatePubkeys.contains(pubkey)) {
+                // If candidate pool is provided, AI is forbidden from hallucinating or inventing new pubkeys
+                if (validCandidatePubkeys.isNotEmpty() && !validCandidatePubkeys.contains(pubkey)) {
                     continue // Skip pubkeys not in the provided prompt candidate pool
                 }
 
@@ -69,12 +70,14 @@ object MatchingResultSchema {
                 }
                 seenPubkeys.add(pubkey)
 
-                val score = (matchObj["compatibility_score"]?.jsonPrimitive?.doubleOrNull ?: 50.0).coerceIn(0.0, 100.0)
+                val score = JsonSanitizerUtils.parseDouble(matchObj["compatibility_score"]?.jsonPrimitive, 50.0).coerceIn(0.0, 100.0)
 
-                val reasons = matchObj["reasons"]?.jsonArray?.mapNotNull {
+                val rawReasons = matchObj["reasons"]?.jsonArray?.mapNotNull {
                     val text = it.jsonPrimitive.content.trim()
                     if (text.isNotBlank()) PrivacyEnforcer.sanitizeText(text) else null
                 } ?: emptyList()
+
+                val reasons = if (rawReasons.isNotEmpty()) rawReasons else listOf("سازگاری بالا با معیارهای ارتباطی شما")
 
                 parsedMatches.add(
                     AiMatchItem(
@@ -87,7 +90,7 @@ object MatchingResultSchema {
             }
 
             if (parsedMatches.isEmpty()) {
-                throw IllegalArgumentException("No valid candidate matches found in AI response")
+                throw IllegalArgumentException("هیچ کاندیدای معتبری از لیست ارسالی در پاسخ هوش مصنوعی یافت نشد")
             }
 
             // Sort by rank
