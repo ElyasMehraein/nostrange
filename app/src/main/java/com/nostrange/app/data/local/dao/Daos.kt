@@ -29,20 +29,20 @@ interface ProfileDao {
 
 @Dao
 interface CandidateDao {
-    @Query("SELECT * FROM candidates WHERE isBlocked = 0 AND lastActiveAt >= :cutoffTimestamp ORDER BY initialScore DESC")
-    fun getActiveCandidates(cutoffTimestamp: Long): Flow<List<CandidateEntity>>
+    @Query("SELECT * FROM candidates WHERE isBlocked = 0 ORDER BY CASE WHEN aiRank IS NOT NULL THEN aiRank ELSE 999999 END ASC, initialScore DESC")
+    fun getActiveCandidates(): Flow<List<CandidateEntity>>
 
-    @Query("SELECT * FROM candidates WHERE isBlocked = 0 AND aiRank IS NOT NULL AND lastActiveAt >= :cutoffTimestamp ORDER BY aiRank ASC")
-    fun getTopAiMatches(cutoffTimestamp: Long): Flow<List<CandidateEntity>>
+    @Query("SELECT * FROM candidates WHERE isBlocked = 0 AND aiRank IS NOT NULL ORDER BY aiRank ASC")
+    fun getTopAiMatches(): Flow<List<CandidateEntity>>
 
     @Query("SELECT * FROM candidates WHERE pubkey = :pubkey LIMIT 1")
     suspend fun getCandidateByPubkey(pubkey: String): CandidateEntity?
 
-    @Query("SELECT * FROM candidates WHERE isBlocked = 0 AND lastActiveAt >= :cutoffTimestamp ORDER BY initialScore DESC LIMIT :limit")
-    suspend fun getTopCandidatesForAiPrompt(cutoffTimestamp: Long, limit: Int = 100): List<CandidateEntity>
+    @Query("SELECT * FROM candidates WHERE isBlocked = 0 ORDER BY initialScore DESC LIMIT :limit")
+    suspend fun getTopCandidatesForAiPrompt(limit: Int = 100): List<CandidateEntity>
 
-    @Query("SELECT COUNT(*) FROM candidates WHERE lastActiveAt >= :cutoffTimestamp")
-    fun getCandidateCount(cutoffTimestamp: Long): Flow<Int>
+    @Query("SELECT COUNT(*) FROM candidates WHERE isBlocked = 0")
+    fun getCandidateCount(): Flow<Int>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertCandidates(candidates: List<CandidateEntity>)

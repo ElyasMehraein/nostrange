@@ -12,8 +12,10 @@ import com.nostrange.app.ai.prompt.MatchingPromptGenerator
 import com.nostrange.app.domain.model.CandidateProfile
 import com.nostrange.app.domain.model.UserProfile
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class MatchesViewModel(application: Application) : AndroidViewModel(application) {
@@ -23,9 +25,14 @@ class MatchesViewModel(application: Application) : AndroidViewModel(application)
     private val profileRepo = app.profileRepository
     private val chatRepo = app.chatRepository
 
-    val topAiMatches = candidateRepo.topAiMatches
-    val allCandidates = candidateRepo.allCandidates
-    val candidateCount = candidateRepo.candidateCount
+    val topAiMatches: StateFlow<List<CandidateProfile>> = candidateRepo.topAiMatches
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val allCandidates: StateFlow<List<CandidateProfile>> = candidateRepo.allCandidates
+        .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
+
+    val candidateCount: StateFlow<Int> = candidateRepo.candidateCount
+        .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
     private val _isGenerating = MutableStateFlow(false)
     val isGenerating: StateFlow<Boolean> = _isGenerating.asStateFlow()

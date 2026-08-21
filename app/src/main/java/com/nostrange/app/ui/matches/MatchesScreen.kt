@@ -68,8 +68,9 @@ fun MatchesScreen(
     viewModel: MatchesViewModel = viewModel()
 ) {
     val context = LocalContext.current
-    val topMatches by viewModel.topAiMatches.collectAsState(initial = emptyList())
-    val candidateCount by viewModel.candidateCount.collectAsState(initial = 0)
+    val topMatches by viewModel.topAiMatches.collectAsState()
+    val allCandidates by viewModel.allCandidates.collectAsState()
+    val candidateCount by viewModel.candidateCount.collectAsState()
     val isGenerating by viewModel.isGenerating.collectAsState()
     val isImporting by viewModel.isImporting.collectAsState()
     val generatedPrompt by viewModel.generatedPrompt.collectAsState()
@@ -77,6 +78,8 @@ fun MatchesScreen(
 
     var showImportDialog by remember { mutableStateOf(false) }
     var selectedCandidate by remember { mutableStateOf<CandidateProfile?>(null) }
+
+    val displayList = if (topMatches.isNotEmpty()) topMatches else allCandidates
 
     Column(
         modifier = Modifier
@@ -97,7 +100,7 @@ fun MatchesScreen(
                     color = TextPrimary
                 )
                 Text(
-                    text = "رتبه‌بندی محلی بر اساس کاندیداهای آنلاین در ۱۰ روز اخیر",
+                    text = if (topMatches.isNotEmpty()) "رتبه‌بندی و تحلیل اختصاصی هوش مصنوعی" else "کاندیداهای سازگار محلی",
                     style = MaterialTheme.typography.labelSmall,
                     color = TextSecondary
                 )
@@ -165,7 +168,7 @@ fun MatchesScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         // Matches List
-        if (topMatches.isEmpty()) {
+        if (displayList.isEmpty()) {
             Box(
                 modifier = Modifier
                     .weight(1f)
@@ -200,7 +203,7 @@ fun MatchesScreen(
                     .fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(topMatches, key = { it.pubkey }) { candidate ->
+                items(displayList, key = { it.pubkey }) { candidate ->
                     MatchCard(
                         candidate = candidate,
                         onClick = { selectedCandidate = candidate },

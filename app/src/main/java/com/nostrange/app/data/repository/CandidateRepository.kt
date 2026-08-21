@@ -36,18 +36,18 @@ class CandidateRepository(
         return (System.currentTimeMillis() / 1000) - (10 * 24 * 60 * 60)
     }
 
-    val allCandidates: Flow<List<CandidateProfile>>
-        get() = candidateDao.getActiveCandidates(get10DaysCutoffTimestamp()).map { list ->
+    val allCandidates: Flow<List<CandidateProfile>> =
+        candidateDao.getActiveCandidates().map { list ->
             list.map { mapEntityToDomain(it) }
         }
 
-    val topAiMatches: Flow<List<CandidateProfile>>
-        get() = candidateDao.getTopAiMatches(get10DaysCutoffTimestamp()).map { list ->
+    val topAiMatches: Flow<List<CandidateProfile>> =
+        candidateDao.getTopAiMatches().map { list ->
             list.map { mapEntityToDomain(it) }
         }
 
-    val candidateCount: Flow<Int>
-        get() = candidateDao.getCandidateCount(get10DaysCutoffTimestamp())
+    val candidateCount: Flow<Int> =
+        candidateDao.getCandidateCount()
 
     init {
         // Listen to incoming Nostr matchable profile events from relays
@@ -72,12 +72,11 @@ class CandidateRepository(
 
     /**
      * Executes the local candidate generation pipeline:
-     * Room DB profiles (active within 10 days) -> Hard Filters -> Compatibility Scoring -> Top 100
+     * Room DB profiles -> Hard Filters -> Compatibility Scoring -> Top 100
      */
     suspend fun runLocalCandidateGeneration(user: UserProfile, targetLimit: Int = 100): List<CandidateProfile> =
         withContext(Dispatchers.IO) {
-            val cutoff = get10DaysCutoffTimestamp()
-            val allLocal = candidateDao.getTopCandidatesForAiPrompt(cutoff, 10000).map { mapEntityToDomain(it) }
+            val allLocal = candidateDao.getTopCandidatesForAiPrompt(10000).map { mapEntityToDomain(it) }
             val topCandidates = CandidateRanker.generateTopCandidates(user, allLocal, targetLimit)
 
             // Persist initial scores back to DB
@@ -94,8 +93,7 @@ class CandidateRepository(
      * Imports and validates Top-20 AI Matching Result.
      */
     suspend fun importAiMatchingResult(rawJson: String): Result<Int> = withContext(Dispatchers.IO) {
-        val cutoff = get10DaysCutoffTimestamp()
-        val topCandidates = candidateDao.getTopCandidatesForAiPrompt(cutoff, 100)
+        val topCandidates = candidateDao.getTopCandidatesForAiPrompt(100)
         val validPubkeys = topCandidates.map { it.pubkey }.toSet()
 
         val parseResult = MatchingResultSchema.parseAndValidateMatchingResult(rawJson, validPubkeys)
