@@ -130,33 +130,35 @@ fun MatchesScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         // Action Buttons: Generate AI prompt & Import AI JSON
-        Row(
+        Column(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Button(
                 onClick = { viewModel.generateMatchingPrompt() },
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxWidth(),
                 enabled = !isGenerating,
-                colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple)
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
+                shape = RoundedCornerShape(12.dp)
             ) {
                 if (isGenerating) {
-                    CircularProgressIndicator(modifier = Modifier.size(16.dp), color = TextPrimary)
+                    CircularProgressIndicator(modifier = Modifier.size(18.dp), color = TextPrimary)
                 } else {
-                    Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("پرامپت ۵۰۰ کاندیدا", fontSize = 11.sp)
+                    Icon(imageVector = Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("ارسال کاندید ها به هوش مصنوعی برای معرفی افراد مناسب", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                 }
             }
 
             Button(
                 onClick = { showImportDialog = true },
-                modifier = Modifier.weight(1f),
-                colors = ButtonDefaults.buttonColors(containerColor = SecondaryCyan)
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(containerColor = SecondaryCyan),
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Icon(imageVector = Icons.Default.Download, contentDescription = null, tint = DarkBackground, modifier = Modifier.size(16.dp))
-                Spacer(modifier = Modifier.width(6.dp))
-                Text("ثبت ۵۰ رتبه برتر", color = DarkBackground, fontSize = 11.sp)
+                Icon(imageVector = Icons.Default.Download, contentDescription = null, tint = DarkBackground, modifier = Modifier.size(18.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("وارد کردن پاسخ دریافتی از هوش مصنوعی", color = DarkBackground, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
             }
         }
 
@@ -185,7 +187,7 @@ fun MatchesScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "دکمه «پرامپت ۵۰۰ کاندیدا» را بزنید و نتیجه را در «ثبت ۵۰ رتبه برتر» وارد کنید.",
+                        text = "دکمه «ارسال کاندید ها به هوش مصنوعی» را بزنید و نتیجه را در «وارد کردن پاسخ دریافتی» وارد کنید.",
                         style = MaterialTheme.typography.labelSmall,
                         color = TextMuted
                     )
