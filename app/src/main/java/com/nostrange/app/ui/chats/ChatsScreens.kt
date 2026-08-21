@@ -210,6 +210,7 @@ fun ChatDetailScreen(
     val context = LocalContext.current
     val messages by viewModel.messages.collectAsState()
     val partnerScore by viewModel.partnerScore.collectAsState()
+    val partnerCandidate by viewModel.partnerCandidate.collectAsState()
     val isBlocked by viewModel.isBlocked.collectAsState()
 
     var inputMessage by remember { mutableStateOf("") }
@@ -249,21 +250,44 @@ fun ChatDetailScreen(
         // Top App Bar
         TopAppBar(
             title = {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column {
+                Column {
+                    val partnerTitle = if (partnerCandidate != null) {
+                        val gender = if (partnerCandidate?.gender == "female") "خانم" else "آقا"
+                        val region = partnerCandidate?.region?.takeIf { it.isNotBlank() && it != "نامشخص" } ?: partnerCandidate?.country ?: "نامشخص"
+                        "$gender، ${partnerCandidate?.age} ساله • $region"
+                    } else {
+                        truncatedPubkey
+                    }
+
+                    Text(
+                        text = partnerTitle,
+                        style = MaterialTheme.typography.titleMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 15.sp
+                        ),
+                        color = TextPrimary,
+                        maxLines = 1
+                    )
+
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
                         Text(
-                            text = truncatedPubkey,
-                            style = MaterialTheme.typography.titleMedium.copy(
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 13.sp
-                            ),
-                            color = TextPrimary
-                        )
-                        Text(
-                            text = "سازگاری: ${String.format(Locale.US, "%.1f", partnerScore)}%",
+                            text = "سازگاری: ${String.format(Locale.US, "%.0f", partnerScore)}%",
                             style = MaterialTheme.typography.labelSmall,
                             color = SecondaryCyan
                         )
+                        if (partnerCandidate != null) {
+                            Text(
+                                text = "• $truncatedPubkey",
+                                style = MaterialTheme.typography.labelSmall.copy(
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 10.sp
+                                ),
+                                color = TextMuted
+                            )
+                        }
                     }
                 }
             },
@@ -273,6 +297,8 @@ fun ChatDetailScreen(
                 }
             },
             actions = {
+                CompatibilityBadge(score = partnerScore)
+                Spacer(modifier = Modifier.width(4.dp))
                 Box {
                     IconButton(onClick = { showMenu = true }) {
                         Icon(imageVector = Icons.Default.MoreVert, contentDescription = "گزینه‌ها", tint = TextPrimary)

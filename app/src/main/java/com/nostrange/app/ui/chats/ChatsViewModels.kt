@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.nostrange.app.NostrangeApp
+import com.nostrange.app.domain.model.CandidateProfile
 import com.nostrange.app.domain.model.ChatMessage
 import com.nostrange.app.domain.model.Conversation
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +32,9 @@ class ChatDetailViewModel(application: Application) : AndroidViewModel(applicati
     private val _messages = MutableStateFlow<List<ChatMessage>>(emptyList())
     val messages: StateFlow<List<ChatMessage>> = _messages.asStateFlow()
 
+    private val _partnerCandidate = MutableStateFlow<CandidateProfile?>(null)
+    val partnerCandidate: StateFlow<CandidateProfile?> = _partnerCandidate.asStateFlow()
+
     private val _partnerScore = MutableStateFlow(0.0)
     val partnerScore: StateFlow<Double> = _partnerScore.asStateFlow()
 
@@ -41,6 +45,7 @@ class ChatDetailViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             _isBlocked.value = chatRepo.isPubkeyBlocked(partnerPubkey)
             val candidate = candidateRepo.getCandidateByPubkey(partnerPubkey)
+            _partnerCandidate.value = candidate
             _partnerScore.value = candidate?.aiScore ?: candidate?.initial_score ?: 0.0
 
             chatRepo.getMessagesForConversation(partnerPubkey).collect { list ->
