@@ -14,6 +14,15 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.nostrange.app.notifications.NotificationHelper
+import com.nostrange.app.worker.MessageSyncWorker
+import java.util.concurrent.TimeUnit
+
 class NostrangeApp : Application() {
 
     val database by lazy { AppDatabase.getDatabase(this) }
@@ -29,7 +38,7 @@ class NostrangeApp : Application() {
     }
 
     val chatRepository by lazy {
-        ChatRepository(database.messageDao(), database.blockedPubkeyDao(), database.candidateDao(), keyStoreManager, nostrClient)
+        ChatRepository(this, database.messageDao(), database.blockedPubkeyDao(), database.candidateDao(), keyStoreManager, nostrClient)
     }
 
     val relayRepository by lazy {
@@ -43,10 +52,16 @@ class NostrangeApp : Application() {
     override fun onCreate() {
         super.onCreate()
         try {
-            // Ensure hardware-backed Nostr keypair exists
+            // 1. Create notification channels for high-priority message alerts
+            NotificationHelper.createNotificationChannel(this)
+
+            // 2. Ensure hardware-backed Nostr keypair exists
             keyStoreManager.getOrCreateKeypair()
 
-            // Broadcast updated online timestamp to Nostr relays safely in background
+            // 3. Setup Android WorkManager 15-Minute Periodic Message Sync
+            setupPeriodicMessageSyncWorker()
+
+            // 4. Broadcast updated online timestamp to Nostr relays safely in background
             CoroutineScope(Dispatchers.IO).launch {
                 try {
                     profileRepository.broadcastOnlineStatus()
@@ -57,5 +72,22 @@ class NostrangeApp : Application() {
         } catch (e: Exception) {
             Log.e("NostrangeApp", "Error during app onCreate: ${e.message}", e)
         }
+    }
+
+    private fun setupPeriodicMessageSyncWorker() {
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        val syncWorkRequest = PeriodicWorkRequestBuilder<MessageSyncWorker>(
+            15, TimeUnit.MINUTES,
+            5, TimeUnit.MINUTES
+        ).setConstraints(constraints).build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "nostrange_15min_message_sync",
+            ExistingPeriodicWorkPolicy.KEEP,
+            syncWorkRequest
+        )
     }
 }

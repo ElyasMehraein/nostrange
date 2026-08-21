@@ -158,6 +158,35 @@ object JsonSanitizerUtils {
     }
 
     /**
+     * Normalizes country name/code to canonical uppercase code (e.g., "IR") or clean string.
+     */
+    fun normalizeCountry(country: String?): String {
+        if (country.isNullOrBlank()) return "IR"
+        val c = country.lowercase().trim()
+        return when {
+            c in listOf("ir", "iran", "ایران", "جمهوری اسلامی ایران", "persia") -> "IR"
+            c in listOf("us", "usa", "america", "united states", "آمریکا") -> "US"
+            c in listOf("ca", "canada", "کانادا") -> "CA"
+            c in listOf("de", "germany", "deutschland", "آلمان") -> "DE"
+            c in listOf("uk", "gb", "great britain", "united kingdom", "انگلیس", "بریتانیا") -> "GB"
+            c in listOf("tr", "turkey", "ترکیه") -> "TR"
+            c in listOf("ae", "uae", "امارات", "دبی") -> "AE"
+            else -> country.trim().uppercase()
+        }
+    }
+
+    /**
+     * Checks if two country strings match or are compatible.
+     */
+    fun isCountryCompatible(country1: String?, country2: String?, allowDifferent: Boolean): Boolean {
+        if (allowDifferent) return true
+        val c1 = normalizeCountry(country1)
+        val c2 = normalizeCountry(country2)
+        if (c1 == "نامشخص" || c2 == "نامشخص" || c1.isBlank() || c2.isBlank()) return true
+        return c1.equals(c2, ignoreCase = true)
+    }
+
+    /**
      * Robust boolean parser from JsonPrimitive.
      */
     fun parseBoolean(primitive: JsonPrimitive?, defaultVal: Boolean = true): Boolean {

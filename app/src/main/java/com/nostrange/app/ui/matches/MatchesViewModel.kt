@@ -40,6 +40,9 @@ class MatchesViewModel(application: Application) : AndroidViewModel(application)
     private val _generatedPrompt = MutableStateFlow<String?>(null)
     val generatedPrompt: StateFlow<String?> = _generatedPrompt.asStateFlow()
 
+    private val _generationError = MutableStateFlow<String?>(null)
+    val generationError: StateFlow<String?> = _generationError.asStateFlow()
+
     private val _importError = MutableStateFlow<String?>(null)
     val importError: StateFlow<String?> = _importError.asStateFlow()
 
@@ -53,17 +56,18 @@ class MatchesViewModel(application: Application) : AndroidViewModel(application)
     fun generateMatchingPrompt() {
         viewModelScope.launch {
             _isGenerating.value = true
+            _generationError.value = null
             val user = profileRepo.getUserProfileOnce()
             if (user == null) {
                 _isGenerating.value = false
-                _importError.value = "ابتدا در تب 'Me' پروفایل خود را بسازید."
+                _generationError.value = "پروفایل شما هنوز در این دستگاه ثبت نشده است.\n\nلطفاً ابتدا به تب «Me» بروید و با پاسخ به سوالات، پروفایل استاندارد خود را تولید و منتشر کنید."
                 return@launch
             }
 
-            val top100 = candidateRepo.runLocalCandidateGeneration(user, 100)
+            val (top100, diagnostics) = candidateRepo.runLocalCandidateGenerationWithDiagnostics(user, 100)
             if (top100.isEmpty()) {
                 _isGenerating.value = false
-                _importError.value = "هیچ کاندیدایی مطابق با فیلترهای اولیه شما یافت نشد."
+                _generationError.value = diagnostics.toUserFriendlySummary()
                 return@launch
             }
 
@@ -71,6 +75,10 @@ class MatchesViewModel(application: Application) : AndroidViewModel(application)
             _generatedPrompt.value = prompt
             _isGenerating.value = false
         }
+    }
+
+    fun clearGenerationError() {
+        _generationError.value = null
     }
 
     fun clearGeneratedPrompt() {

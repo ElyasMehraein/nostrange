@@ -31,7 +31,8 @@ object ProfileJsonSchema {
             val rootObj = sanitized.jsonObject
 
             val schemaVersion = JsonSanitizerUtils.parseInt(rootObj["schema_version"]?.jsonPrimitive, 1)
-            val country = rootObj["country"]?.jsonPrimitive?.content?.trim()?.takeIf { it.isNotBlank() } ?: "IR"
+            val rawCountry = rootObj["country"]?.jsonPrimitive?.content?.trim()?.takeIf { it.isNotBlank() } ?: "IR"
+            val country = JsonSanitizerUtils.normalizeCountry(rawCountry)
             val region = rootObj["region"]?.jsonPrimitive?.content?.trim()?.takeIf { it.isNotBlank() }
                 ?: rootObj["city"]?.jsonPrimitive?.content?.trim()?.takeIf { it.isNotBlank() }
                 ?: rootObj["state"]?.jsonPrimitive?.content?.trim()?.takeIf { it.isNotBlank() }

@@ -85,6 +85,9 @@ dependencies {
     implementation(libs.androidx.security.crypto)
     implementation(libs.bouncycastle.prov)
 
+    // Background Processing & Notifications (WorkManager)
+    implementation(libs.androidx.work.runtime.ktx)
+
     // Testing
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)

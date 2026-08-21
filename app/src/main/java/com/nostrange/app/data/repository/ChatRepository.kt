@@ -22,9 +22,12 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.content.Context
+import com.nostrange.app.notifications.NotificationHelper
 import java.util.UUID
 
 class ChatRepository(
+    private val context: Context,
     private val messageDao: MessageDao,
     private val blockedPubkeyDao: BlockedPubkeyDao,
     private val candidateDao: CandidateDao,
@@ -32,6 +35,9 @@ class ChatRepository(
     private val nostrClient: NostrClient,
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO)
 ) {
+
+    @Volatile
+    var activeChatPubkey: String? = null
 
     val conversationsFlow: Flow<List<Conversation>> = messageDao.getAllConversationPubkeys()
         .combine(blockedPubkeyDao.getBlockedPubkeys()) { pubkeys, blockedList ->
@@ -193,6 +199,24 @@ class ChatRepository(
                 isRead = false
             )
             messageDao.insertMessage(msg)
+
+            // Trigger offline/background rich notification if user is not actively viewing this conversation
+            if (activeChatPubkey != senderPubkey) {
+                val candidate = candidateDao.getCandidateByPubkey(senderPubkey)
+                val senderTitle = if (candidate != null) {
+                    val genderLabel = if (candidate.gender == "female") "خانم" else "آقا"
+                    "پیام جدید از $genderLabel (${candidate.age} ساله - ${candidate.region})"
+                } else {
+                    "پیام جدید در Nostrange"
+                }
+
+                NotificationHelper.showMessageNotification(
+                    context = context,
+                    senderPubkey = senderPubkey,
+                    messageText = decryptedText,
+                    senderTitle = senderTitle
+                )
+            }
         } catch (e: Exception) {
             Log.w("ChatRepo", "Failed to decrypt incoming message from $senderPubkey: ${e.message}")
         }

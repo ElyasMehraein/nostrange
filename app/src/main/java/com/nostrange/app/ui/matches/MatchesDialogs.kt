@@ -334,3 +334,73 @@ fun CandidateDetailDialog(
         }
     )
 }
+
+@Composable
+fun MatchingErrorDialog(
+    errorMessage: String,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = DarkSurface,
+        title = {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(PrimaryPurple.copy(alpha = 0.2f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AutoAwesome,
+                        contentDescription = null,
+                        tint = PrimaryPurple,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Text(
+                    text = "وضعیت فیلتر کاندیداها",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = TextPrimary
+                )
+            }
+        },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    color = DarkSurfaceVariant,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, DarkBorder)
+                ) {
+                    Text(
+                        text = errorMessage,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = TextPrimary,
+                        modifier = Modifier.padding(14.dp),
+                        lineHeight = 22.sp
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = onDismiss,
+                colors = ButtonDefaults.buttonColors(containerColor = PrimaryPurple),
+                shape = RoundedCornerShape(10.dp)
+            ) {
+                Text("متوجه شدم", color = TextPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
+            }
+        }
+    )
+}
+

@@ -14,8 +14,17 @@ object CandidateRanker {
         rawPool: List<CandidateProfile>,
         targetLimit: Int = 100
     ): List<CandidateProfile> {
-        // Step 1: Hard Filter (Drops non-compliant profiles)
-        val filtered = HardFilterEngine.filterCandidates(user, rawPool)
+        val (topCandidates, _) = generateTopCandidatesWithDiagnostics(user, rawPool, targetLimit)
+        return topCandidates
+    }
+
+    fun generateTopCandidatesWithDiagnostics(
+        user: UserProfile,
+        rawPool: List<CandidateProfile>,
+        targetLimit: Int = 100
+    ): Pair<List<CandidateProfile>, FilterRejectionDetails> {
+        // Step 1: Hard Filter (Drops non-compliant profiles with detailed diagnostics)
+        val (filtered, diagnostics) = HardFilterEngine.filterCandidatesWithDiagnostics(user, rawPool)
 
         // Step 2: Calculate Initial Compatibility Scores locally
         val scored = filtered.map { candidate ->
@@ -24,6 +33,7 @@ object CandidateRanker {
         }
 
         // Step 3: Sort descending and take top N (e.g. 100)
-        return scored.sortedByDescending { it.initial_score }.take(targetLimit)
+        val topN = scored.sortedByDescending { it.initial_score }.take(targetLimit)
+        return Pair(topN, diagnostics)
     }
 }

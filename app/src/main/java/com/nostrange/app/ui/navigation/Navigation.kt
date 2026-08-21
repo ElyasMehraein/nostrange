@@ -18,6 +18,7 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -61,10 +62,22 @@ val bottomNavItems = listOf(
 
 @Composable
 fun MainAppNavigation(
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    pendingChatPubkey: String? = null,
+    onChatOpened: () -> Unit = {}
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    // Handle deep-link navigation from message notifications
+    LaunchedEffect(pendingChatPubkey) {
+        if (!pendingChatPubkey.isNullOrBlank()) {
+            navController.navigate(Screen.ChatDetail.createRoute(pendingChatPubkey)) {
+                launchSingleTop = true
+            }
+            onChatOpened()
+        }
+    }
 
     val isBottomBarVisible = bottomNavItems.any { it.route == currentRoute }
 

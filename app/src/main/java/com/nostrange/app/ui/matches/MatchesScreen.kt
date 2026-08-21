@@ -74,6 +74,7 @@ fun MatchesScreen(
     val isGenerating by viewModel.isGenerating.collectAsState()
     val isImporting by viewModel.isImporting.collectAsState()
     val generatedPrompt by viewModel.generatedPrompt.collectAsState()
+    val generationError by viewModel.generationError.collectAsState()
     val importError by viewModel.importError.collectAsState()
 
     var showImportDialog by remember { mutableStateOf(false) }
@@ -245,6 +246,13 @@ fun MatchesScreen(
                     Toast.makeText(context, "رتبه‌بندی هوش مصنوعی با موفقیت ثبت شد!", Toast.LENGTH_LONG).show()
                 }
             }
+        )
+    }
+
+    if (generationError != null) {
+        MatchingErrorDialog(
+            errorMessage = generationError!!,
+            onDismiss = { viewModel.clearGenerationError() }
         )
     }
 

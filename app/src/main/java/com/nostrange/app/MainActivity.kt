@@ -1,15 +1,24 @@
 package com.nostrange.app
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.nostrange.app.notifications.NotificationHelper
 import com.nostrange.app.ui.navigation.MainAppNavigation
 import com.nostrange.app.ui.theme.DarkBackground
 import com.nostrange.app.ui.theme.NostrangeTheme
@@ -17,10 +26,20 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    private var pendingChatPubkey by mutableStateOf<String?>(null)
+
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ ->
+        // Notification permission granted/denied handled
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
+        requestNotificationPermissionIfNeeded()
+        handleIncomingNotificationChatIntent(intent)
         handleIncomingSharedIntent(intent)
 
         setContent {
@@ -29,7 +48,10 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = DarkBackground
                 ) {
-                    MainAppNavigation()
+                    MainAppNavigation(
+                        pendingChatPubkey = pendingChatPubkey,
+                        onChatOpened = { pendingChatPubkey = null }
+                    )
                 }
             }
         }
@@ -37,7 +59,28 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        handleIncomingNotificationChatIntent(intent)
         handleIncomingSharedIntent(intent)
+    }
+
+    private fun requestNotificationPermissionIfNeeded() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val isGranted = ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (!isGranted) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
+    private fun handleIncomingNotificationChatIntent(intent: Intent?) {
+        val chatPubkey = intent?.getStringExtra(NotificationHelper.EXTRA_OPEN_CHAT_PUBKEY)
+        if (!chatPubkey.isNullOrBlank()) {
+            pendingChatPubkey = chatPubkey
+        }
     }
 
     /**

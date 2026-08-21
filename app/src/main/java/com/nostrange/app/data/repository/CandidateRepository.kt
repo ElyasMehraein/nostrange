@@ -76,8 +76,17 @@ class CandidateRepository(
      */
     suspend fun runLocalCandidateGeneration(user: UserProfile, targetLimit: Int = 100): List<CandidateProfile> =
         withContext(Dispatchers.IO) {
+            val (topCandidates, _) = runLocalCandidateGenerationWithDiagnostics(user, targetLimit)
+            topCandidates
+        }
+
+    suspend fun runLocalCandidateGenerationWithDiagnostics(
+        user: UserProfile,
+        targetLimit: Int = 100
+    ): Pair<List<CandidateProfile>, com.nostrange.app.domain.matching.FilterRejectionDetails> =
+        withContext(Dispatchers.IO) {
             val allLocal = candidateDao.getTopCandidatesForAiPrompt(10000).map { mapEntityToDomain(it) }
-            val topCandidates = CandidateRanker.generateTopCandidates(user, allLocal, targetLimit)
+            val (topCandidates, diagnostics) = CandidateRanker.generateTopCandidatesWithDiagnostics(user, allLocal, targetLimit)
 
             // Persist initial scores back to DB
             for (c in topCandidates) {
@@ -86,7 +95,7 @@ class CandidateRepository(
                 }
             }
 
-            topCandidates
+            Pair(topCandidates, diagnostics)
         }
 
     /**
