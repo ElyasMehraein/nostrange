@@ -16,7 +16,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.NoPhotography
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -115,36 +114,6 @@ fun CompatibilityBadge(
                 fontWeight = FontWeight.Bold
             )
         }
-    }
-}
-
-/**
- * Clean Zero-Media notice component.
- */
-@Composable
-fun NoMediaNotice(
-    modifier: Modifier = Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(DarkSurfaceVariant)
-            .padding(horizontal = 12.dp, vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Icon(
-            imageVector = Icons.Default.NoPhotography,
-            contentDescription = null,
-            tint = TextMuted,
-            modifier = Modifier.size(16.dp)
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = "بدون عکس یا رسانه — ارتباط متنی و ساختاریافته غیرمتمرکز",
-            style = MaterialTheme.typography.labelSmall,
-            color = TextMuted
-        )
     }
 }
 

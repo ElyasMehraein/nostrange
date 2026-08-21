@@ -5,14 +5,14 @@ import com.nostrange.app.domain.model.UserProfile
 
 /**
  * Orchestrates the full on-device matching pipeline:
- * 10,000 profiles -> Hard Filters -> Initial Scoring -> Top 500
+ * Profiles -> Hard Filters -> Initial Scoring -> Top 100
  */
 object CandidateRanker {
 
     fun generateTopCandidates(
         user: UserProfile,
         rawPool: List<CandidateProfile>,
-        targetLimit: Int = 500
+        targetLimit: Int = 100
     ): List<CandidateProfile> {
         // Step 1: Hard Filter (Drops non-compliant profiles)
         val filtered = HardFilterEngine.filterCandidates(user, rawPool)
@@ -23,7 +23,7 @@ object CandidateRanker {
             candidate.copy(initial_score = score)
         }
 
-        // Step 3: Sort descending and take top N (e.g. 500)
+        // Step 3: Sort descending and take top N (e.g. 100)
         return scored.sortedByDescending { it.initial_score }.take(targetLimit)
     }
 }

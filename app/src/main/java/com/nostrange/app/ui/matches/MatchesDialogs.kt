@@ -71,7 +71,7 @@ fun ImportMatchesDialog(
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Text(
-                    text = "خروجی JSON حاصل از تحلیل AI برای 50 مورد برتر را در کادر زیر وارد کنید:",
+                    text = "خروجی JSON حاصل از تحلیل AI برای 20 مورد برتر را در کادر زیر وارد کنید:",
                     style = MaterialTheme.typography.bodyMedium,
                     color = TextSecondary
                 )

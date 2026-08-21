@@ -39,7 +39,7 @@ interface CandidateDao {
     suspend fun getCandidateByPubkey(pubkey: String): CandidateEntity?
 
     @Query("SELECT * FROM candidates WHERE isBlocked = 0 AND lastActiveAt >= :cutoffTimestamp ORDER BY initialScore DESC LIMIT :limit")
-    suspend fun getTopCandidatesForAiPrompt(cutoffTimestamp: Long, limit: Int = 500): List<CandidateEntity>
+    suspend fun getTopCandidatesForAiPrompt(cutoffTimestamp: Long, limit: Int = 100): List<CandidateEntity>
 
     @Query("SELECT COUNT(*) FROM candidates WHERE lastActiveAt >= :cutoffTimestamp")
     fun getCandidateCount(cutoffTimestamp: Long): Flow<Int>

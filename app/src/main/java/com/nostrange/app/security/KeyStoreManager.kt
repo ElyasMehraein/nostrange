@@ -75,6 +75,17 @@ class KeyStoreManager(private val context: Context) {
         return priv
     }
 
+    fun getPrivateKeyHex(): String {
+        return prefs.getString(KEY_PRIVATE_KEY_HEX, null) ?: run {
+            val (priv, _) = getOrCreateKeypair()
+            Bech32.bytesToHex(priv)
+        }
+    }
+
+    fun getPrivateKeyNsec(): String {
+        return Bech32.privkeyToNsec(getPrivateKeyHex())
+    }
+
     fun importPrivateKey(nsecOrHex: String): Pair<ByteArray, ByteArray> {
         val privBytes = if (nsecOrHex.startsWith("nsec1")) {
             Bech32.hexToBytes(Bech32.nsecToPrivkey(nsecOrHex))

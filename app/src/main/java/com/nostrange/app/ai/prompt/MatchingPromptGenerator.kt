@@ -22,7 +22,7 @@ object MatchingPromptGenerator {
     fun generateRankingPrompt(
         userProfile: UserProfile,
         candidates: List<CandidateProfile>,
-        topCount: Int = 50
+        topCount: Int = 20
     ): String {
         val userJson = json.encodeToString(userProfile)
 

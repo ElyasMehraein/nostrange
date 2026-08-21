@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                         if (matchRes.isSuccess) {
                             Toast.makeText(
                                 this@MainActivity,
-                                "رتبه‌بندی ۵۰ مورد برتر AI دریافت شد!",
+                                "رتبه‌بندی ۲۰ مورد برتر AI دریافت شد!",
                                 Toast.LENGTH_LONG
                             ).show()
                         }

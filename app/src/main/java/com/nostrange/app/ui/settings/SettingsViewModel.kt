@@ -27,6 +27,8 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     val userPubkeyHex = keyStoreManager.getPublicKeyHex()
     val userPubkeyNpub = keyStoreManager.getPublicKeyNpub()
+    val userPrivkeyNsec = keyStoreManager.getPrivateKeyNsec()
+    val userPrivkeyHex = keyStoreManager.getPrivateKeyHex()
 
     fun addRelay(url: String) {
         viewModelScope.launch {

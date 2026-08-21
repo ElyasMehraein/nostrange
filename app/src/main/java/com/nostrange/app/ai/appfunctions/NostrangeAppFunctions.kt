@@ -54,7 +54,7 @@ class NostrangeAppFunctions(
      * Function 3: getMatchingCandidates
      * Retrieves top locally filtered candidates for AI ranking.
      */
-    suspend fun getMatchingCandidates(limit: Int = 500): List<CandidateProfile> {
+    suspend fun getMatchingCandidates(limit: Int = 100): List<CandidateProfile> {
         val user = profileRepository.getUserProfileOnce() ?: return emptyList()
         return candidateRepository.runLocalCandidateGeneration(user, limit)
     }
@@ -63,7 +63,7 @@ class NostrangeAppFunctions(
      * Function 4: createMatchingPrompt
      * Generates ranking prompt containing candidates data for the agent to process.
      */
-    suspend fun createMatchingPrompt(limit: Int = 500): String {
+    suspend fun createMatchingPrompt(limit: Int = 100): String {
         val user = profileRepository.getUserProfileOnce() ?: return "Error: User profile not set."
         val candidates = candidateRepository.runLocalCandidateGeneration(user, limit)
         return MatchingPromptGenerator.generateRankingPrompt(user, candidates)

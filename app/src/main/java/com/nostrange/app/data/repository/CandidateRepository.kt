@@ -72,9 +72,9 @@ class CandidateRepository(
 
     /**
      * Executes the local candidate generation pipeline:
-     * Room DB profiles (active within 10 days) -> Hard Filters -> Compatibility Scoring -> Top 500
+     * Room DB profiles (active within 10 days) -> Hard Filters -> Compatibility Scoring -> Top 100
      */
-    suspend fun runLocalCandidateGeneration(user: UserProfile, targetLimit: Int = 500): List<CandidateProfile> =
+    suspend fun runLocalCandidateGeneration(user: UserProfile, targetLimit: Int = 100): List<CandidateProfile> =
         withContext(Dispatchers.IO) {
             val cutoff = get10DaysCutoffTimestamp()
             val allLocal = candidateDao.getTopCandidatesForAiPrompt(cutoff, 10000).map { mapEntityToDomain(it) }
@@ -91,11 +91,11 @@ class CandidateRepository(
         }
 
     /**
-     * Imports and validates Top-50 AI Matching Result.
+     * Imports and validates Top-20 AI Matching Result.
      */
     suspend fun importAiMatchingResult(rawJson: String): Result<Int> = withContext(Dispatchers.IO) {
         val cutoff = get10DaysCutoffTimestamp()
-        val topCandidates = candidateDao.getTopCandidatesForAiPrompt(cutoff, 500)
+        val topCandidates = candidateDao.getTopCandidatesForAiPrompt(cutoff, 100)
         val validPubkeys = topCandidates.map { it.pubkey }.toSet()
 
         val parseResult = MatchingResultSchema.parseAndValidateMatchingResult(rawJson, validPubkeys)

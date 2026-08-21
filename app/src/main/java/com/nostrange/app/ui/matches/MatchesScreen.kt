@@ -48,7 +48,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nostrange.app.domain.model.CandidateProfile
 import com.nostrange.app.ui.components.CompatibilityBadge
-import com.nostrange.app.ui.components.NoMediaNotice
 import com.nostrange.app.ui.components.StatCard
 import com.nostrange.app.ui.me.PromptDisplayDialog
 import com.nostrange.app.ui.theme.AccentGreen
@@ -104,9 +103,7 @@ fun MatchesScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
-        NoMediaNotice()
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // Pipeline Stats
         Row(

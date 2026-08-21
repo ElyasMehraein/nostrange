@@ -57,7 +57,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nostrange.app.domain.model.ChatMessage
 import com.nostrange.app.domain.model.Conversation
 import com.nostrange.app.ui.components.CompatibilityBadge
-import com.nostrange.app.ui.components.NoMediaNotice
 import com.nostrange.app.ui.components.PrivacyDisclaimerBanner
 import com.nostrange.app.ui.theme.AccentPink
 import com.nostrange.app.ui.theme.DarkBackground
@@ -98,9 +97,7 @@ fun ChatsScreen(
             color = TextSecondary
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
-        NoMediaNotice()
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         if (conversations.isEmpty()) {
             Box(

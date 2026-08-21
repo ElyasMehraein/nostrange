@@ -53,14 +53,14 @@ class MatchesViewModel(application: Application) : AndroidViewModel(application)
                 return@launch
             }
 
-            val top500 = candidateRepo.runLocalCandidateGeneration(user, 500)
-            if (top500.isEmpty()) {
+            val top100 = candidateRepo.runLocalCandidateGeneration(user, 100)
+            if (top100.isEmpty()) {
                 _isGenerating.value = false
                 _importError.value = "هیچ کاندیدایی مطابق با فیلترهای اولیه شما یافت نشد."
                 return@launch
             }
 
-            val prompt = MatchingPromptGenerator.generateRankingPrompt(user, top500, 50)
+            val prompt = MatchingPromptGenerator.generateRankingPrompt(user, top100, 20)
             _generatedPrompt.value = prompt
             _isGenerating.value = false
         }

@@ -55,7 +55,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nostrange.app.domain.model.UserProfile
-import com.nostrange.app.ui.components.NoMediaNotice
 import com.nostrange.app.ui.theme.AccentGreen
 import com.nostrange.app.ui.theme.DarkBackground
 import com.nostrange.app.ui.theme.DarkBorder
@@ -126,9 +125,7 @@ fun MeScreen(
             }
         }
 
-        Spacer(modifier = Modifier.height(6.dp))
-        NoMediaNotice()
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         // If user profile is already saved
         if (userProfile != null) {

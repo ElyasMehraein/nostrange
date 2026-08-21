@@ -25,6 +25,8 @@ import androidx.compose.material.icons.filled.Lan
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material.icons.filled.Storage
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -54,7 +56,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nostrange.app.domain.model.Relay
 import com.nostrange.app.domain.model.RelayStatus
-import com.nostrange.app.ui.components.NoMediaNotice
 import com.nostrange.app.ui.theme.AccentAmber
 import com.nostrange.app.ui.theme.AccentGreen
 import com.nostrange.app.ui.theme.AccentPink
@@ -77,6 +78,7 @@ fun SettingsScreen(
     val candidateCount by viewModel.candidateCount.collectAsState(initial = 0)
 
     var showAddRelayDialog by remember { mutableStateOf(false) }
+    var showPrivateKey by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -96,8 +98,6 @@ fun SettingsScreen(
             color = TextSecondary
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
-        NoMediaNotice()
         Spacer(modifier = Modifier.height(10.dp))
 
         LazyColumn(
@@ -129,7 +129,7 @@ fun SettingsScreen(
                         )
 
                         Spacer(modifier = Modifier.height(10.dp))
-                        Text(text = "شناسه عمومی کلید:", style = MaterialTheme.typography.labelSmall, color = TextMuted)
+                        Text(text = "شناسه عمومی کلید (npub):", style = MaterialTheme.typography.labelSmall, color = TextMuted)
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -149,6 +149,44 @@ fun SettingsScreen(
                                 Toast.makeText(context, "کلید عمومی کپی شد", Toast.LENGTH_SHORT).show()
                             }) {
                                 Icon(imageVector = Icons.Default.ContentCopy, contentDescription = "کپی", tint = SecondaryCyan, modifier = Modifier.size(18.dp))
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(text = "کلید خصوصی جهت پشتیبان‌گیری و انتقال (nsec - کاملاً محرمانه):", style = MaterialTheme.typography.labelSmall, color = AccentPink)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(DarkSurfaceVariant)
+                                .padding(horizontal = 10.dp, vertical = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = if (showPrivateKey) {
+                                    "${viewModel.userPrivkeyNsec.take(16)}...${viewModel.userPrivkeyNsec.takeLast(10)}"
+                                } else {
+                                    "nsec1••••••••••••••••••••••••"
+                                },
+                                style = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace, fontSize = 12.sp),
+                                color = if (showPrivateKey) AccentPink else TextMuted
+                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconButton(onClick = { showPrivateKey = !showPrivateKey }) {
+                                    Icon(
+                                        imageVector = if (showPrivateKey) Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                                        contentDescription = if (showPrivateKey) "مخفی‌سازی" else "نمایش",
+                                        tint = TextSecondary,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                                IconButton(onClick = {
+                                    viewModel.copyToClipboard(context, "کلید خصوصی", viewModel.userPrivkeyNsec)
+                                    Toast.makeText(context, "کلید خصوصی کپی شد! آن را در جایی امن نگهداری کنید.", Toast.LENGTH_LONG).show()
+                                }) {
+                                    Icon(imageVector = Icons.Default.ContentCopy, contentDescription = "کپی کلید خصوصی", tint = AccentPink, modifier = Modifier.size(18.dp))
+                                }
                             }
                         }
                     }
