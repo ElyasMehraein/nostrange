@@ -2,6 +2,7 @@ package com.nostrange.app.ui.matches
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -314,21 +315,41 @@ private fun MatchCard(
             }
 
             if (candidate.ai_reasons.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(10.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(DarkSurfaceVariant)
-                        .padding(8.dp)
+                        .background(SecondaryCyan.copy(alpha = 0.08f))
+                        .border(1.dp, SecondaryCyan.copy(alpha = 0.2f), RoundedCornerShape(8.dp))
+                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    candidate.ai_reasons.take(2).forEach { reason ->
-                        Text(
-                            text = "✓ $reason",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = TextSecondary,
-                            lineHeight = 17.sp
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Default.AutoAwesome,
+                            contentDescription = null,
+                            tint = SecondaryCyan,
+                            modifier = Modifier.size(14.dp)
                         )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "دلایل انتخاب هوش مصنوعی:",
+                            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
+                            color = SecondaryCyan,
+                            fontSize = 11.sp
+                        )
+                    }
+                    candidate.ai_reasons.take(2).forEach { reason ->
+                        Row(verticalAlignment = Alignment.Top) {
+                            Text("✓ ", color = SecondaryCyan, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = reason,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = TextPrimary,
+                                lineHeight = 16.sp
+                            )
+                        }
                     }
                 }
             }
