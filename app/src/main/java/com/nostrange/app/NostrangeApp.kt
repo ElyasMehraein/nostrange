@@ -1,6 +1,7 @@
 package com.nostrange.app
 
 import android.app.Application
+import android.util.Log
 import com.nostrange.app.ai.appfunctions.NostrangeAppFunctions
 import com.nostrange.app.data.local.AppDatabase
 import com.nostrange.app.data.nostr.NostrClient
@@ -41,12 +42,20 @@ class NostrangeApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        // Ensure hardware-backed Nostr keypair exists
-        keyStoreManager.getOrCreateKeypair()
+        try {
+            // Ensure hardware-backed Nostr keypair exists
+            keyStoreManager.getOrCreateKeypair()
 
-        // Broadcast updated online timestamp to Nostr relays
-        CoroutineScope(Dispatchers.IO).launch {
-            profileRepository.broadcastOnlineStatus()
+            // Broadcast updated online timestamp to Nostr relays safely in background
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    profileRepository.broadcastOnlineStatus()
+                } catch (e: Exception) {
+                    Log.w("NostrangeApp", "Failed to broadcast online status on launch: ${e.message}")
+                }
+            }
+        } catch (e: Exception) {
+            Log.e("NostrangeApp", "Error during app onCreate: ${e.message}", e)
         }
     }
 }
