@@ -64,6 +64,7 @@ import com.nostrange.app.ui.theme.DarkBorder
 import com.nostrange.app.ui.theme.DarkSurface
 import com.nostrange.app.ui.theme.DarkSurfaceVariant
 import com.nostrange.app.ui.theme.PrimaryPurple
+import com.nostrange.app.ui.theme.PrimaryPurpleLight
 import com.nostrange.app.ui.theme.SecondaryCyan
 import com.nostrange.app.ui.theme.TextMuted
 import com.nostrange.app.ui.theme.TextPrimary
@@ -384,6 +385,12 @@ private fun ChatMessageBubble(message: ChatMessage) {
         sdf.format(Date(message.timestamp * 1000))
     }
 
+    val timestampColor = if (message.isOutgoing) {
+        PrimaryPurpleLight.copy(alpha = 0.90f)
+    } else {
+        TextSecondary.copy(alpha = 0.85f)
+    }
+
     Box(
         modifier = Modifier.fillMaxWidth(),
         contentAlignment = if (message.isOutgoing) Alignment.CenterEnd else Alignment.CenterStart
@@ -412,8 +419,8 @@ private fun ChatMessageBubble(message: ChatMessage) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = timeFormatted,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = TextMuted,
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                    color = timestampColor,
                     modifier = Modifier.align(Alignment.End)
                 )
             }
